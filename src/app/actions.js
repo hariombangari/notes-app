@@ -25,12 +25,15 @@ export const createNote = async (channelName, formData) => {
     pinned: false,
   };
   await redis.set(`notes:${noteId}`, note)
+  revalidatePath(`/notes/${channelName}`)
   redirect(`/notes/${channelName}`);
 };
 
 export const getNotes = async (channelId, term) => {
+  console.log("get all notes", channelId);
   const response = await redis.search("idx:notes", `@channelId:{${channelId}}`)
   const results = response.documents.map((document) => document.value);
+  // console.log("get all notes result", results);
   return results.filter((note) => note.archived === 'false');
 };
 
@@ -41,9 +44,11 @@ export const navigate = async (channelId, noteId) => {
 export const deleteNotes = async (noteId, channelName) => {
   await redis.del(`notes:${noteId}`);
   revalidatePath(`/notes/${channelName}`)
+  revalidatePath(`/notes/${channelName}/${noteId}`)
 };
 
 export const getNote = async (noteId) => {
+  console.log("get note", noteId);
   const result = await redis.get(`notes:${noteId}`)
   if(Object.keys(result).length) {
     return result;
@@ -57,5 +62,6 @@ export const updateNotes = async (noteId, formData) => {
   note.title = formData.get("title");
   await redis.set(`notes:${noteId}`, note)
   revalidatePath(`/notes/${note.channelId}`)
+  revalidatePath(`/notes/${note.channelId}/${noteId}`)
   redirect(`/notes/${note.channelId}`)
 };

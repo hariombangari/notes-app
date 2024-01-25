@@ -13,3 +13,16 @@ export default async function Channel({ params }) {
     </div>
   );
 }
+
+export async function generateStaticParams() {
+  return [
+    {
+      channelName: "hello"
+    },
+    {
+      channelName: "hello123"
+    }
+  ]
+}
+
+export const dynamicParams = true
